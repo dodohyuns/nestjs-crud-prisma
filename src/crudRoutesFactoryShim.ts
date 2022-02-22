@@ -5,6 +5,7 @@ import { CrudRoutesFactory } from '@nestjsx/crud/lib/crud/crud-routes.factory';
 
 // @ts-ignore
 export default class CrudRoutesFactoryShim extends CrudRoutesFactory {
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
   constructor(target: any, options: CrudOptions) {
     super(target, options);
   }

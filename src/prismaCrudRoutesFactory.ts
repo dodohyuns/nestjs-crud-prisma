@@ -1,3 +1,7 @@
+/* eslint-disable @typescript-eslint/no-useless-constructor */
+/* eslint-disable @typescript-eslint/comma-dangle */
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable consistent-return */
 import * as TypeGraphql from 'type-graphql';
 import { CrudOptions } from '@nestjsx/crud/lib/interfaces';
 import { FieldMetadata } from 'type-graphql/dist/metadata/definitions';
@@ -84,6 +88,7 @@ export class PrismaCrudRoutesFactory extends CrudRoutesFactoryShim {
       typeof swaggerType === 'object' &&
       symmetricDifference(
         new Set(Object.keys(swaggerType)),
+        // eslint-disable-next-line @typescript-eslint/comma-dangle
         new Set(Object.values(swaggerType))
       )
     ) {

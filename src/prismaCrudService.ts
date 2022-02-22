@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable @typescript-eslint/comma-dangle */
 import camelcase from 'lodash/camelCase';
 import mapSeriesAsync from 'map-series-async';
 import { PrismaService } from 'nestjs-prisma-module';
@@ -10,6 +12,7 @@ import {
 import {
   ComparisonOperator,
   QueryFilter,
+  QueryJoin,
   QuerySort,
   SCondition
 } from '@nestjsx/crud-request';
@@ -94,33 +97,34 @@ export class PrismaCrudService<T> extends CrudService<T> {
       const result = await this.client.findMany({
         ...(parsed.sort.length > 0
           ? {
-              orderBy: {
-                ...parsed.sort.reduce(
-                  (orderBy: OrderBy, querySort: QuerySort) => {
-                    orderBy[querySort.field] = (
-                      querySort.order || 'ASC'
-                    ).toLowerCase() as 'asc' | 'desc';
-                    return orderBy;
-                  },
-                  {}
-                )
-              }
+            orderBy: {
+              ...parsed.sort.reduce(
+                (orderBy: OrderBy, querySort: QuerySort) => {
+                  orderBy[querySort.field] = (
+                    querySort.order || 'ASC'
+                  ).toLowerCase() as 'asc' | 'desc';
+                  return orderBy;
+                },
+                {}
+              )
             }
+          }
           : {}),
+        ...(parsed.join ? { include: this.getJoin(parsed.join) } : {}),
         ...(parsed.or
           ? {
-              where: await this.getWhereInputFromOr(parsed.or)
-            }
+            where: await this.getWhereInputFromOr(parsed.or)
+          }
           : {}),
         ...(parsed.filter
           ? {
-              where: await this.getWhereInputFromFilter(parsed.filter)
-            }
+            where: await this.getWhereInputFromFilter(parsed.filter)
+          }
           : {}),
         ...(parsed.search
           ? {
-              where: await this.getWhereInputFromSearch(parsed.search)
-            }
+            where: await this.getWhereInputFromSearch(parsed.search)
+          }
           : {}),
         ...(parsed.limit ? { take: parsed.limit } : {}),
         ...(isPaginated && parsed.offset ? { skip: parsed.offset } : {})
@@ -138,7 +142,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
         return response;
       }
       return result;
-    } catch (err) {
+    } catch (err: any) {
       if (
         err.toString().includes('Invalid') &&
         err.toString().includes('invocation:')
@@ -161,7 +165,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
         this.throwNotFoundException(`${this.tableName}`);
       }
       return res;
-    } catch (err) {
+    } catch (err: any) {
       this.throwBadRequestException('Bad Request');
       throw err;
     }
@@ -173,7 +177,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
         data: dto
       });
       return res;
-    } catch (err) {
+    } catch (err: any) {
       if (
         err.toString().includes('Invalid') &&
         err.toString().includes('invocation:')
@@ -193,7 +197,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
             data: item
           });
           return res;
-        } catch (err) {
+        } catch (err: any) {
           if (
             err.toString().includes('Invalid') &&
             err.toString().includes('invocation:')
@@ -217,7 +221,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
         data: dto
       });
       return res;
-    } catch (err) {
+    } catch (err: any) {
       if (
         err.toString().includes('Invalid') &&
         err.toString().includes('invocation:')
@@ -241,7 +245,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
         }
       });
       return res;
-    } catch (err) {
+    } catch (err: any) {
       if (
         err.toString().includes('Invalid') &&
         err.toString().includes('invocation:')
@@ -260,6 +264,32 @@ export class PrismaCrudService<T> extends CrudService<T> {
 
   protected async getWhereInputFromOr(or: QueryFilter[]): Promise<WhereInput> {
     return this.getWhereInputFromSearch({ $or: or });
+  }
+
+  parseNestedJoin(key: string): any {
+    const splitted = key.split('.');
+    if (splitted.length === 1) {
+      return {
+        include: { [key]: true }
+      };
+    }
+    const rest = splitted.slice(1);
+    return { include: this.parseNestedJoin(rest?.join('.')) };
+  }
+
+  protected getJoin(joinOptions: QueryJoin[]) {
+    return joinOptions.reduce((previousValue, currentValue) => {
+      const splitted = currentValue.field.split('.');
+      if (splitted.length === 1) {
+        (previousValue as any)[currentValue.field] = true;
+      } else {
+        const newarr = splitted.slice(1);
+        (previousValue as any)[splitted[0]] = this.parseNestedJoin(
+          newarr.join('.')
+        );
+      }
+      return previousValue;
+    }, {});
   }
 
   protected async getWhereInputFromSearch(
