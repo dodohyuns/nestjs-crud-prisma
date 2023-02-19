@@ -143,12 +143,6 @@ export class PrismaCrudService<T> extends CrudService<T> {
       }
       return result;
     } catch (err: any) {
-      if (
-        err.toString().includes('Invalid') &&
-        err.toString().includes('invocation:')
-      ) {
-        this.throwBadRequestException('Bad Request');
-      }
       throw err;
     }
   }
@@ -166,7 +160,6 @@ export class PrismaCrudService<T> extends CrudService<T> {
       }
       return res;
     } catch (err: any) {
-      this.throwBadRequestException('Bad Request');
       throw err;
     }
   }
@@ -178,12 +171,6 @@ export class PrismaCrudService<T> extends CrudService<T> {
       });
       return res;
     } catch (err: any) {
-      if (
-        err.toString().includes('Invalid') &&
-        err.toString().includes('invocation:')
-      ) {
-        this.throwBadRequestException('Bad Request');
-      }
       throw err;
     }
   }
@@ -198,12 +185,6 @@ export class PrismaCrudService<T> extends CrudService<T> {
           });
           return res;
         } catch (err: any) {
-          if (
-            err.toString().includes('Invalid') &&
-            err.toString().includes('invocation:')
-          ) {
-            this.throwBadRequestException('Bad Request');
-          }
           throw err;
         }
       })
@@ -222,13 +203,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
       });
       return res;
     } catch (err: any) {
-      if (
-        err.toString().includes('Invalid') &&
-        err.toString().includes('invocation:')
-      ) {
-        this.throwBadRequestException('Bad Request');
-      }
-      return err;
+      throw err;
     }
   }
 
@@ -246,13 +221,7 @@ export class PrismaCrudService<T> extends CrudService<T> {
       });
       return res;
     } catch (err: any) {
-      if (
-        err.toString().includes('Invalid') &&
-        err.toString().includes('invocation:')
-      ) {
-        this.throwBadRequestException('Bad Request');
-      }
-      return err;
+      throw err;
     }
   }
 
